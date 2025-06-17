@@ -1,3 +1,98 @@
+// Initialize EmailJS
+(function() {
+    try {
+        emailjs.init("hAqsHQxe5tRJa2c7C");
+        console.log("EmailJS initialized successfully");
+    } catch (error) {
+        console.error("Failed to initialize EmailJS:", error);
+    }
+})();
+
+// Contact Form Handling
+const contactForm = document.getElementById('contact-form');
+const submitBtn = contactForm.querySelector('.submit-btn');
+const formStatus = contactForm.querySelector('.form-status');
+
+contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Validate form fields
+    const name = contactForm.user_name.value.trim();
+    const email = contactForm.user_email.value.trim();
+    const message = contactForm.message.value.trim();
+
+    if (!name || !email || !message) {
+        formStatus.textContent = 'Please fill in all fields';
+        formStatus.className = 'form-status error';
+        formStatus.style.display = 'block';
+        return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        formStatus.textContent = 'Please enter a valid email address';
+        formStatus.className = 'form-status error';
+        formStatus.style.display = 'block';
+        return;
+    }
+    
+    // Show loading state
+    submitBtn.classList.add('loading');
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = {
+            user_name: name,
+            user_email: email,
+            message: message,
+            to_email: 'raghunandankayarkar@gmail.com'
+        };
+
+        console.log('Attempting to send email with data:', formData);
+        
+        const response = await emailjs.send('service_ayhl41n', 'template_cl0sy3n', formData);
+        console.log('EmailJS Response:', response);
+        
+        if (response.status === 200) {
+            // Show success message
+            formStatus.textContent = 'Message sent successfully!';
+            formStatus.className = 'form-status success';
+            formStatus.style.display = 'block';
+            
+            // Reset form
+            contactForm.reset();
+        } else {
+            throw new Error(`Email service returned status: ${response.status}`);
+        }
+    } catch (error) {
+        // Show detailed error message
+        console.error('Detailed error:', error);
+        let errorMessage = 'Failed to send message. ';
+        
+        if (error.text) {
+            errorMessage += error.text;
+        } else if (error.message) {
+            errorMessage += error.message;
+        } else {
+            errorMessage += 'Please try again.';
+        }
+        
+        formStatus.textContent = errorMessage;
+        formStatus.className = 'form-status error';
+        formStatus.style.display = 'block';
+    } finally {
+        // Reset button state
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        
+        // Hide status message after 5 seconds
+        setTimeout(() => {
+            formStatus.style.display = 'none';
+        }, 5000);
+    }
+});
+
 // Mobile Navigation
 const navSlide = () => {
     const burger = document.querySelector('.burger');
@@ -64,23 +159,6 @@ window.addEventListener('scroll', () => {
         navbar.style.backgroundColor = '#000';
         navbar.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.7)';
     }
-});
-
-// Form Submission
-const contactForm = document.querySelector('.contact-form');
-contactForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    // Get form data
-    const formData = new FormData(contactForm);
-    const data = Object.fromEntries(formData);
-    
-    // Here you would typically send the data to a server
-    console.log('Form submitted:', data);
-    
-    // Show success message
-    alert('Thank you for your message! I will get back to you soon.');
-    contactForm.reset();
 });
 
 // Add animation on scroll
